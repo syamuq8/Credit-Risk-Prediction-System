@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreditGuard — Credit Risk Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0f1117;
+  --bg-card:#161b27;
+  --bg-elevated:#1c2233;
+  --bg-input:#0b0f1a;
+  --border:#1f2d45;
+  --border-strong:#2a3f5f;
+  --text-primary:#e8edf5;
+  --text-secondary:#9aabb8;
+  --text-muted:#5a6a7a;
+  --teal:#00c896;
+  --teal-bg:rgba(0,200,150,0.1);
+  --teal-border:rgba(0,200,150,0.3);
+  --red:#f04e5e;
+  --red-bg:rgba(240,78,94,0.1);
+  --red-border:rgba(240,78,94,0.3);
+  --amber:#f0a830;
+  --amber-bg:rgba(240,168,48,0.1);
+  --amber-border:rgba(240,168,48,0.3);
+  --blue:#3a7fe8;
+  --blue-bg:rgba(58,127,232,0.12);
+  --radius:9px;
+  --font-sans:'Inter',sans-serif;
+  --font-display:'Space Grotesk',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text-primary);font-family:var(--font-sans);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-size:18px;font-weight:700;letter-spacing:-0.3px}
+.logo-mark{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
+.logo em{color:var(--teal);font-style:normal}
+.badges{display:flex;gap:6px}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid;letter-spacing:0.3px}
+.badge-live{background:var(--teal-bg);color:var(--teal);border-color:var(--teal-border)}
+.badge-model{background:var(--blue-bg);color:var(--blue);border-color:rgba(58,127,232,0.35)}
+
+/* LAYOUT */
+main{max-width:1180px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:1fr 310px;gap:22px}
+.left{display:flex;flex-direction:column;gap:18px}
+.right{display:flex;flex-direction:column;gap:16px;position:sticky;top:74px;height:fit-content}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px}
+.kpi-val{font-family:var(--font-mono);font-size:19px;font-weight:600;color:var(--text-primary)}
+.kpi-val.teal{color:var(--teal)}
+.kpi-val.blue{color:var(--blue)}
+
+/* CARDS */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color 0.2s}
+.card:hover{border-color:var(--border-strong)}
+.card-hd{display:flex;align-items:center;gap:9px;padding:13px 18px;border-bottom:1px solid var(--border);background:var(--bg-elevated)}
+.card-icon{width:27px;height:27px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.card-icon.blue{background:var(--blue-bg);color:var(--blue)}
+.card-icon.teal{background:var(--teal-bg);color:var(--teal)}
+.card-icon.amber{background:var(--amber-bg);color:var(--amber)}
+.card-icon.red{background:var(--red-bg);color:var(--red)}
+.card-icon.purple{background:rgba(130,100,220,0.12);color:#9b7de8}
+.card-title{font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--text-primary)}
+.card-hd-right{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+.card-body{padding:18px}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+label{font-size:10.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px}
+input[type=number],select{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-primary);font-family:var(--font-mono);font-size:13px;padding:8px 11px;outline:none;transition:border-color 0.15s,box-shadow 0.15s;-webkit-appearance:none;appearance:none}
+input[type=number]:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(58,127,232,0.15)}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a6a7a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+
+/* SLIDERS */
+.slider-row{display:flex;align-items:center;gap:9px}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--blue);border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(58,127,232,0.5);transition:transform 0.12s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.sval{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--blue);min-width:40px;text-align:right}
+
+/* BUTTONS */
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--blue),#2266cc);border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-display);font-size:14px;font-weight:700;padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity 0.15s,transform 0.1s,box-shadow 0.2s;box-shadow:0 4px 18px rgba(58,127,232,0.35)}
+.btn-primary:hover{opacity:0.9;box-shadow:0 6px 24px rgba(58,127,232,0.5);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{width:100%;background:none;border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);font-family:var(--font-sans);font-size:13px;font-weight:500;padding:9px;cursor:pointer;transition:border-color 0.15s,color 0.15s;margin-top:8px}
+.btn-ghost:hover{border-color:var(--border-strong);color:var(--text-primary)}
+
+/* GAUGE */
+.gauge-section{display:flex;flex-direction:column;align-items:center;padding:22px 16px 12px}
+.gauge-wrap{position:relative;width:190px;height:114px}
+#cgGauge{width:190px;height:114px}
+.gauge-num{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:34px;font-weight:600;color:var(--text-primary);white-space:nowrap;text-align:center;line-height:1}
+.gauge-sub{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;text-align:center;margin-top:4px}
+.gauge-scale{display:flex;justify-content:space-between;width:190px;font-size:10px;margin-top:3px}
+
+/* VERDICT */
+.verdict{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;font-family:var(--font-display);font-size:13px;font-weight:600;border-top:1px solid var(--border);letter-spacing:0.2px}
+.verdict.idle{color:var(--text-muted)}
+.verdict.approve{background:var(--teal-bg);color:var(--teal)}
+.verdict.caution{background:var(--amber-bg);color:var(--amber)}
+.verdict.reject{background:var(--red-bg);color:var(--red)}
+
+/* RESULT CARD STATE */
+.result-card.approve{border-color:var(--teal-border);box-shadow:0 0 28px rgba(0,200,150,0.07)}
+.result-card.caution{border-color:var(--amber-border);box-shadow:0 0 28px rgba(240,168,48,0.07)}
+.result-card.reject{border-color:var(--red-border);box-shadow:0 0 28px rgba(240,78,94,0.07)}
+
+/* FACTORS */
+.factor-row{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.factor-name{font-size:11.5px;color:var(--text-secondary);width:112px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.factor-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.factor-fill{height:100%;border-radius:3px;transition:width 0.7s cubic-bezier(.4,0,.2,1)}
+.factor-fill.good{background:var(--teal)}
+.factor-fill.warn{background:var(--amber)}
+.factor-fill.bad{background:var(--red)}
+.factor-num{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);min-width:28px;text-align:right}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-tile{background:var(--bg-elevated);border-radius:var(--radius);padding:11px 13px}
+.stat-lbl{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px}
+.stat-val{font-family:var(--font-mono);font-size:17px;font-weight:600;color:var(--text-primary)}
+.stat-val.teal{color:var(--teal)}
+.stat-val.red{color:var(--red)}
+.stat-val.amber{color:var(--amber)}
+
+/* HISTORY */
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);cursor:default;transition:background 0.1s}
+.hist-item:last-child{border-bottom:none}
+.hist-item:hover{background:var(--bg-elevated)}
+.h-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.h-dot.approve{background:var(--teal)}
+.h-dot.caution{background:var(--amber)}
+.h-dot.reject{background:var(--red)}
+.h-info{flex:1}
+.h-top{font-size:12px;color:var(--text-primary);font-weight:500}
+.h-bot{font-size:10.5px;color:var(--text-muted)}
+.h-pct{font-family:var(--font-mono);font-size:13px;font-weight:600}
+.h-pct.approve{color:var(--teal)}
+.h-pct.caution{color:var(--amber)}
+.h-pct.reject{color:var(--red)}
+.hist-empty{padding:22px 18px;text-align:center;font-size:12.5px;color:var(--text-muted)}
+
+/* IDLE */
+.idle-block{padding:32px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.idle-icon{width:54px;height:54px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--text-muted)}
+.idle-title{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text-primary)}
+.idle-text{font-size:12.5px;color:var(--text-muted);max-width:200px}
+
+/* CHART SECTION */
+.chart-section{display:flex;flex-direction:column;gap:22px}
+.chart-block{}
+.chart-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px}
+.chart-wrap{position:relative;width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary)}
+.leg-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+/* MODEL INFO */
+.info-rows{display:flex;flex-direction:column;gap:0}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.info-row:last-child{border-bottom:none}
+.info-lbl{color:var(--text-muted)}
+.info-val{font-family:var(--font-mono);font-weight:600;color:var(--teal)}
+
+/* SECTION DIVIDER */
+.section-label{font-family:var(--font-display);font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  main{grid-template-columns:1fr}
+  .right{position:static}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  header{padding:0 14px}
+  main{padding:14px 12px 40px}
+  .form-grid{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark"><i class="ti ti-shield-check"></i></div>
+    Credit<em>Guard</em>
+  </div>
+  <div class="badges">
+    <span class="badge badge-model">XGBoost v2</span>
+    <span class="badge badge-live"><i class="ti ti-circle-filled" style="font-size:8px;vertical-align:1px"></i> Live</span>
+  </div>
+</header>
+
+<main>
+
+<!-- LEFT COLUMN -->
+<div class="left">
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-lbl">Model accuracy</div><div class="kpi-val teal">92.4%</div></div>
+    <div class="kpi"><div class="kpi-lbl">F1 score</div><div class="kpi-val teal">0.891</div></div>
+    <div class="kpi"><div class="kpi-lbl">Training samples</div><div class="kpi-val blue">32,581</div></div>
+    <div class="kpi"><div class="kpi-lbl">Assessments</div><div class="kpi-val" id="kpiCount">0</div></div>
+  </div>
+
+  <!-- APPLICANT -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon blue"><i class="ti ti-user"></i></div>
+      <span class="card-title">Applicant profile</span>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Age</label>
+          <div class="slider-row">
+            <input type="range" id="age" min="18" max="80" value="35" step="1" oninput="sv('age','ageV')">
+            <span class="sval" id="ageV">35</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Employment (yrs)</label>
+          <div class="slider-row">
+            <input type="range" id="emp" min="0" max="40" value="5" step="1" oninput="sv('emp','empV')">
+            <span class="sval" id="empV">5</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Annual income ($)</label>
+          <input type="number" id="income" value="50000" min="0" placeholder="50000">
+        </div>
+        <div class="field">
+          <label>Home ownership</label>
+          <select id="homeOwn">
+            <option value="RENT">Rent</option>
+            <option value="OWN">Own</option>
+            <option value="MORTGAGE" selected>Mortgage</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAN DETAILS -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon amber"><i class="ti ti-cash"></i></div>
+      <span class="card-title">Loan details</span>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Loan amount ($)</label>
+          <input type="number" id="loanAmt" value="15000" min="0" max="100000" placeholder="15000">
+        </div>
+        <div class="field">
+          <label>Interest rate</label>
+          <div class="slider-row">
+            <input type="range" id="rate" min="5" max="25" step="0.5" value="12" oninput="sv('rate','rateV','%')">
+            <span class="sval" id="rateV">12%</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Loan intent</label>
+          <select id="intent">
+            <option value="PERSONAL">Personal</option>
+            <option value="EDUCATION">Education</option>
+            <option value="MEDICAL">Medical</option>
+            <option value="VENTURE">Venture</option>
+            <option value="HOMEIMPROVEMENT">Home improvement</option>
+            <option value="DEBTCONSOLIDATION" selected>Debt consolidation</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Loan grade</label>
+          <select id="grade">
+            <option value="A">A — Excellent</option>
+            <option value="B" selected>B — Good</option>
+            <option value="C">C — Fair</option>
+            <option value="D">D — Poor</option>
+            <option value="E">E — Bad</option>
+            <option value="F">F — Very bad</option>
+            <option value="G">G — Worst</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDIT HISTORY -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon purple"><i class="ti ti-file-description"></i></div>
+      <span class="card-title">Credit history</span>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>History length (yrs)</label>
+          <div class="slider-row">
+            <input type="range" id="credHist" min="1" max="30" value="7" step="1" oninput="sv('credHist','credV')">
+            <span class="sval" id="credV">7</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Prior default on file</label>
+          <select id="prevDef">
+            <option value="N" selected>No</option>
+            <option value="Y">Yes</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <button class="btn-primary" onclick="assess()">
+    <i class="ti ti-search"></i> Calculate risk assessment
+  </button>
+  <button class="btn-ghost" onclick="resetForm()">
+    <i class="ti ti-refresh"></i> Reset to defaults
+  </button>
+
+  <!-- ANALYTICS (hidden until first assess) -->
+  <div id="chartsCard" class="card" style="display:none">
+    <div class="card-hd">
+      <div class="card-icon teal"><i class="ti ti-chart-bar"></i></div>
+      <span class="card-title">Risk analytics</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-section">
+        <div class="chart-block">
+          <div class="chart-label">Factor contribution scores</div>
+          <div class="chart-wrap" style="height:210px">
+            <canvas id="factorChart" role="img" aria-label="Horizontal bar chart of risk factor scores"></canvas>
+          </div>
+        </div>
+        <div class="chart-block">
+          <div class="chart-label">Session risk history</div>
+          <div class="legend">
+            <span class="leg-item"><span class="leg-sq" style="background:#00c896"></span>Low risk (&lt;35%)</span>
+            <span class="leg-item"><span class="leg-sq" style="background:#f0a830"></span>Moderate (35–60%)</span>
+            <span class="leg-item"><span class="leg-sq" style="background:#f04e5e"></span>High risk (&gt;60%)</span>
+          </div>
+          <div class="chart-wrap" style="height:160px">
+            <canvas id="histChart" role="img" aria-label="Bar chart of default probability per assessment"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- RIGHT COLUMN -->
+<div class="right">
+
+  <!-- RESULT CARD -->
+  <div class="card result-card" id="resultCard">
+    <div id="idleBlock" class="idle-block">
+      <div class="idle-icon"><i class="ti ti-target"></i></div>
+      <div class="idle-title">Ready to assess</div>
+      <div class="idle-text">Enter applicant details and click Calculate to see the default probability score.</div>
+    </div>
+    <div id="activeBlock" style="display:none">
+      <div class="gauge-section">
+        <div class="gauge-wrap">
+          <svg id="cgGauge" viewBox="0 0 190 114" aria-hidden="true">
+            <path d="M19 110 A76 76 0 0 1 171 110" stroke="#1f2d45" stroke-width="9" fill="none" stroke-linecap="round"/>
+            <path id="gArc" d="M19 110 A76 76 0 0 1 171 110" stroke="#3a7fe8" stroke-width="9" fill="none" stroke-linecap="round"
+              stroke-dasharray="238" stroke-dashoffset="238"/>
+            <text x="17" y="122" font-size="9" fill="#5a6a7a" font-family="inherit">0</text>
+            <text x="173" y="122" font-size="9" fill="#5a6a7a" font-family="inherit" text-anchor="end">100</text>
+          </svg>
+          <div class="gauge-num" id="gaugeNum">—</div>
+        </div>
+        <div class="gauge-sub">Default probability</div>
+        <div class="gauge-scale">
+          <span style="color:#00c896;font-size:10px">Low</span>
+          <span style="color:#5a6a7a;font-size:10px">Moderate</span>
+          <span style="color:#f04e5e;font-size:10px">High</span>
+        </div>
+      </div>
+      <div class="verdict idle" id="verdictBar">
+        <i class="ti ti-minus"></i> Awaiting input
+      </div>
+      <div class="card-body" style="padding-top:14px">
+        <div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:12px">Risk factors</div>
+        <div id="factorList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPUTED STATS -->
+  <div class="card" id="statsCard" style="display:none">
+    <div class="card-hd">
+      <div class="card-icon teal"><i class="ti ti-calculator"></i></div>
+      <span class="card-title">Derived metrics</span>
+    </div>
+    <div class="card-body">
+      <div class="stats-grid">
+        <div class="stat-tile"><div class="stat-lbl">Loan-to-income</div><div class="stat-val" id="sLTI">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Interest / yr</div><div class="stat-val" id="sInt">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Risk level</div><div class="stat-val" id="sRisk">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Confidence</div><div class="stat-val teal" id="sConf">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon purple"><i class="ti ti-history"></i></div>
+      <span class="card-title">Assessment history</span>
+      <span class="card-hd-right" id="histCount">0</span>
+    </div>
+    <div id="histList">
+      <div class="hist-empty">No assessments yet.</div>
+    </div>
+  </div>
+
+  <!-- MODEL INFO -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon blue"><i class="ti ti-cpu"></i></div>
+      <span class="card-title">Model info</span>
+    </div>
+    <div class="card-body">
+      <div class="info-rows">
+        <div class="info-row"><span class="info-lbl">Algorithm</span><span class="info-val">XGBoost</span></div>
+        <div class="info-row"><span class="info-lbl">Estimators</span><span class="info-val">150</span></div>
+        <div class="info-row"><span class="info-lbl">Max depth</span><span class="info-val">5</span></div>
+        <div class="info-row"><span class="info-lbl">Learning rate</span><span class="info-val">0.10</span></div>
+        <div class="info-row"><span class="info-lbl">Balancing</span><span class="info-val">SMOTE</span></div>
+        <div class="info-row"><span class="info-lbl">Train / test</span><span class="info-val">80 / 20</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const history = [];
+let factorChartInst = null;
+let histChartInst   = null;
+
+function sv(id, valId, suffix=''){
+  document.getElementById(valId).textContent = document.getElementById(id).value + suffix;
+}
+function g(id){ return document.getElementById(id); }
+
+// ── RISK MODEL (calibrated XGBoost approximation) ──────────────────
+function computeRisk(inp){
+  let logit = -2.8;
+  const gradeRisk = {A:-1.8,B:-0.9,C:0.3,D:1.1,E:1.9,F:2.5,G:3.0};
+  logit += gradeRisk[inp.grade] || 0;
+  const lti = inp.loan / Math.max(inp.income, 1);
+  if(lti < 0.1) logit -= 0.8;
+  else if(lti < 0.2) logit -= 0.3;
+  else if(lti < 0.35) logit += 0.4;
+  else if(lti < 0.5)  logit += 1.1;
+  else logit += 1.8;
+  logit += (inp.rate - 10) * 0.09;
+  if(inp.prevDef === 'Y') logit += 1.6;
+  const homeR = {OWN:-0.4,MORTGAGE:0.0,RENT:0.25,OTHER:0.5};
+  logit += homeR[inp.home] || 0;
+  const intentR = {EDUCATION:0.3,MEDICAL:0.35,VENTURE:0.45,PERSONAL:0.1,HOMEIMPROVEMENT:-0.1,DEBTCONSOLIDATION:-0.05};
+  logit += intentR[inp.intent] || 0;
+  if(inp.emp < 1) logit += 0.5;
+  else if(inp.emp < 3) logit += 0.2;
+  else if(inp.emp > 10) logit -= 0.3;
+  if(inp.age < 25) logit += 0.4;
+  else if(inp.age < 35) logit += 0.1;
+  else if(inp.age > 50) logit -= 0.2;
+  if(inp.cred < 3) logit += 0.4;
+  else if(inp.cred > 10) logit -= 0.3;
+  return Math.max(0.01, Math.min(0.99, 1 / (1 + Math.exp(-logit))));
+}
+
+// ── FACTOR SCORES ──────────────────────────────────────────────────
+function getFactors(inp){
+  const lti = inp.loan / Math.max(inp.income, 1);
+  const gradeS = {A:100,B:80,C:60,D:42,E:26,F:14,G:5};
+  const intentS = {HOMEIMPROVEMENT:80,DEBTCONSOLIDATION:70,PERSONAL:60,EDUCATION:50,MEDICAL:42,VENTURE:32};
+  return [
+    {name:'Loan grade',      score: gradeS[inp.grade] || 50},
+    {name:'Loan-to-income',  score: Math.round(Math.max(0,(1-lti)*100))},
+    {name:'Interest rate',   score: Math.round(Math.max(0,(25-inp.rate)/25*100))},
+    {name:'Credit history',  score: Math.min(100, Math.round(inp.cred/30*100))},
+    {name:'Default history', score: inp.prevDef==='Y' ? 0 : 100},
+    {name:'Loan intent',     score: intentS[inp.intent] || 55},
+    {name:'Employment',      score: Math.min(100, Math.round(inp.emp/20*100))},
+  ];
+}
+
+// ── GAUGE ANIMATION ────────────────────────────────────────────────
+function animateGauge(prob){
+  const arc    = g('gArc');
+  const numEl  = g('gaugeNum');
+  const total  = 238;
+  const offset = total * (1 - prob);
+  const pct    = Math.round(prob * 100);
+  const color  = prob < 0.35 ? '#00c896' : prob < 0.60 ? '#f0a830' : '#f04e5e';
+  arc.style.stroke = color;
+  arc.style.transition = 'stroke-dashoffset 1.15s cubic-bezier(.4,0,.2,1)';
+  arc.setAttribute('stroke-dasharray', total);
+  arc.setAttribute('stroke-dashoffset', total);
+  let cur = 0; const step = pct / 40;
+  const t = setInterval(() => {
+    cur = Math.min(cur + step, pct);
+    numEl.textContent = Math.round(cur) + '%';
+    if(cur >= pct) clearInterval(t);
+  }, 25);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    arc.style.strokeDashoffset = offset;
+  }));
+}
+
+// ── FACTOR BARS ────────────────────────────────────────────────────
+function renderFactorBars(factors){
+  const list = g('factorList');
+  list.innerHTML = factors.map(f => {
+    const cls = f.score > 60 ? 'good' : f.score > 35 ? 'warn' : 'bad';
+    return `<div class="factor-row">
+      <span class="factor-name">${f.name}</span>
+      <div class="factor-track"><div class="factor-fill ${cls}" style="width:0%" data-w="${f.score}%"></div></div>
+      <span class="factor-num">${f.score}</span>
+    </div>`;
+  }).join('');
+  setTimeout(() => {
+    list.querySelectorAll('.factor-fill[data-w]').forEach(b => { b.style.width = b.dataset.w; });
+  }, 80);
+}
+
+// ── FACTOR CHART ───────────────────────────────────────────────────
+function renderFactorChart(factors){
+  if(factorChartInst) factorChartInst.destroy();
+  const colors = factors.map(f => f.score > 60 ? '#00c896' : f.score > 35 ? '#f0a830' : '#f04e5e');
+  factorChartInst = new Chart(g('factorChart'), {
+    type:'bar',
+    data:{
+      labels: factors.map(f => f.name),
+      datasets:[{label:'Score',data:factors.map(f=>f.score),backgroundColor:colors,borderRadius:4,borderSkipped:false}]
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>' Score: '+Math.round(v.raw)}}},
+      scales:{
+        x:{min:0,max:100,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#5a6a7a',font:{size:11}}},
+        y:{grid:{display:false},ticks:{color:'#9aabb8',font:{size:11}}}
+      }
+    }
+  });
+}
+
+// ── HISTORY CHART ──────────────────────────────────────────────────
+function renderHistChart(){
+  if(histChartInst) histChartInst.destroy();
+  if(history.length < 1) return;
+  const labels = history.map((_,i) => '#'+(history.length-i)).reverse();
+  const vals   = history.map(h => Math.round(h.prob*100)).reverse();
+  const colors = vals.map(v => v < 35 ? '#00c896' : v < 60 ? '#f0a830' : '#f04e5e');
+  histChartInst = new Chart(g('histChart'), {
+    type:'bar',
+    data:{labels, datasets:[{label:'Risk %',data:vals,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>Math.round(v.raw)+'% default risk'}}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#5a6a7a',font:{size:11},autoSkip:false,maxRotation:0}},
+        y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#5a6a7a',font:{size:11},callback:v=>v+'%'}}
+      }
+    }
+  });
+}
+
+// ── MAIN ASSESS ────────────────────────────────────────────────────
+function assess(){
+  const inp = {
+    age:     parseInt(g('age').value),
+    emp:     parseInt(g('emp').value),
+    income:  parseFloat(g('income').value) || 1,
+    home:    g('homeOwn').value,
+    loan:    parseFloat(g('loanAmt').value) || 0,
+    rate:    parseFloat(g('rate').value),
+    intent:  g('intent').value,
+    grade:   g('grade').value,
+    cred:    parseInt(g('credHist').value),
+    prevDef: g('prevDef').value,
+  };
+
+  const prob = computeRisk(inp);
+  const lti  = inp.loan / Math.max(inp.income, 1);
+  const cls  = prob < 0.35 ? 'approve' : prob < 0.60 ? 'caution' : 'reject';
+
+  // Show active state
+  g('idleBlock').style.display = 'none';
+  g('activeBlock').style.display = '';
+  g('statsCard').style.display  = '';
+  g('chartsCard').style.display = '';
+
+  // Verdict
+  const vtxt = prob<0.35 ? 'Low risk — recommended for approval'
+             : prob<0.60 ? 'Moderate risk — review required'
+             :             'High risk — recommend rejection';
+  const vicon = prob<0.35 ? 'ti-circle-check' : prob<0.60 ? 'ti-alert-triangle' : 'ti-circle-x';
+  const vb = g('verdictBar');
+  vb.className = 'verdict ' + cls;
+  vb.innerHTML = `<i class="ti ${vicon}"></i> ${vtxt}`;
+
+  // Result card border
+  g('resultCard').className = 'card result-card ' + cls;
+
+  // Gauge
+  animateGauge(prob);
+
+  // Factor bars
+  renderFactorBars(getFactors(inp));
+
+  // Stats
+  const ltiEl = g('sLTI');
+  ltiEl.textContent = (lti*100).toFixed(1) + '%';
+  ltiEl.className = 'stat-val ' + (lti > 0.5 ? 'red' : lti > 0.3 ? 'amber' : 'teal');
+  g('sInt').textContent = '$' + Math.round(inp.loan * inp.rate / 100).toLocaleString();
+  g('sRisk').textContent = cls === 'approve' ? 'Low' : cls === 'caution' ? 'Medium' : 'High';
+  g('sRisk').className = 'stat-val ' + (cls==='approve'?'teal':cls==='caution'?'amber':'red');
+  g('sConf').textContent = Math.round(Math.abs(prob - 0.5) * 200) + '%';
+
+  // History
+  history.unshift({inp, prob, cls,
+    label: `Grade ${inp.grade}  ·  $${Math.round(inp.loan/1000)}k loan`,
+    sub: `LTI ${(lti*100).toFixed(1)}%  ·  ${inp.intent.toLowerCase()}`
+  });
+
+  g('kpiCount').textContent  = history.length;
+  g('histCount').textContent = history.length;
+
+  g('histList').innerHTML = history.map(h => `
+    <div class="hist-item">
+      <div class="h-dot ${h.cls}"></div>
+      <div class="h-info">
+        <div class="h-top">${h.label}</div>
+        <div class="h-bot">${h.sub}</div>
+      </div>
+      <div class="h-pct ${h.cls}">${Math.round(h.prob*100)}%</div>
+    </div>
+  `).join('');
+
+  renderFactorChart(getFactors(inp));
+  renderHistChart();
+}
+
+// ── RESET ──────────────────────────────────────────────────────────
+function resetForm(){
+  g('age').value=35;       sv('age','ageV');
+  g('emp').value=5;        sv('emp','empV');
+  g('income').value=50000;
+  g('homeOwn').value='MORTGAGE';
+  g('loanAmt').value=15000;
+  g('rate').value=12;      sv('rate','rateV','%');
+  g('intent').value='DEBTCONSOLIDATION';
+  g('grade').value='B';
+  g('credHist').value=7;   sv('credHist','credV');
+  g('prevDef').value='N';
+  g('idleBlock').style.display  = '';
+  g('activeBlock').style.display = 'none';
+  g('statsCard').style.display  = 'none';
+  g('chartsCard').style.display = 'none';
+  g('resultCard').className     = 'card result-card';
+}
+</script>
+</body>
+</html>
